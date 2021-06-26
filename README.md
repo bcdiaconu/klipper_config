@@ -63,3 +63,13 @@
 
 1. get a mesh by the profile name `BED_MESH_PROFILE REMOVE=<name>`
 
+## PID
+
+### PID for Extruder
+
+Issue a `PID_CALIBRATE HEATER=extruder TARGET=200` command
+
+### PID for Bed
+
+Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
+
