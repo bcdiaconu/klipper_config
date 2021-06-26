@@ -73,3 +73,6 @@ Issue a `PID_CALIBRATE HEATER=extruder TARGET=200` command
 
 Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
+## More Info
+
+<https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md>
