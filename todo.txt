@@ -3,7 +3,7 @@
 (/) min/max x
 (/) calibrate y axis
 (/) min/max y
-(/)calibrate z axis
+(/) calibrate z axis
 (/) min/max z
 (/) pid bed
 (/) probing mesh
