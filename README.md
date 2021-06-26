@@ -39,3 +39,27 @@
 
 1. home the machine with `G28`
 1. issue a `PROBE_ACCURACY` command and wait for the results
+
+## Mesh
+
+### Creating a mesh
+
+1. make sure the the bed surface free of debree
+1. home the machine with `G28`
+1. issue `BED_MESH_CALIBRATE` and wait to finish
+1. give the profile a name `BED_MESH_PROFILE SAVE=<name>`
+1. save the setting by issuing `SAVE_CONFIG`
+
+### Save a mesh
+
+1. give the profile a name `BED_MESH_PROFILE SAVE=<name>`
+1. save the setting by issuing `SAVE_CONFIG`
+
+### Load a mesh
+
+1. get a mesh by the profile name `BED_MESH_PROFILE LOAD=<name>`
+
+### Delete a mesh
+
+1. get a mesh by the profile name `BED_MESH_PROFILE REMOVE=<name>`
+
