@@ -1,5 +1,32 @@
 # klipper configuration
 
+## Hardware in use
+
+* Frame: Ender 3 Pro (v1)
+* Mainboard: BigTreeTech SKR v1.4 Turbo
+* Stepper drivers: BigTreeTech TMC2209
+* Display: Original Universal LCD 12864 Creality CR10
+* Extruder:
+  * Type: Direct
+  * Hotend: BMG Aero Volcano
+  * Gears: BMG Aero Volcano
+
+## Scripts
+
+### Start
+
+For `PrusaSlicer` or `SuperSlicer` the startup gcode would be similar to:
+
+```gcode
+START_PRINT FIRST_LAYER_BED_TEMP=[first_layer_bed_temperature] FIRST_LAYER_NOZZLE_TEMP=[first_layer_temperature]
+```
+
+### End
+
+```gcode
+END_PRINT
+```
+
 ## BLTouch offset
 
 ### X and Y axes calibration
@@ -76,3 +103,9 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 ## More Info
 
 <https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md>
+
+<https://www.klipper3d.org/Pressure_Advance.html>
+
+<https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md>
+
+<https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216>
