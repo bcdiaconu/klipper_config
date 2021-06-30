@@ -7,5 +7,6 @@
 (/) min/max z
 (/) pid bed
 (/) probing mesh
+(/) webcam
 linear advance
 resonance compensation
