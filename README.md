@@ -100,6 +100,22 @@ Issue a `PID_CALIBRATE HEATER=extruder TARGET=200` command
 
 Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
+## Pressure (Linear) advance
+
+1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
+1. setup the printer and generate g-code:
+  1. use high printing speeds (eg 100 mm/s)
+  1. set 0% infill
+  1. layer height 75% of nozzle diameter (0.3 for 0.4 nozzle)
+1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
+1. and set the pressure_advance start and increment factor by sending either of the following commands:
+  1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
+  1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
+1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
+1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
+1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
+1. issue a `RESTART` command to restart the firmware
+
 ## More Info
 
 <https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md>
