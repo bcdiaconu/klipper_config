@@ -6,10 +6,11 @@
 * Mainboard: BigTreeTech SKR v1.4 Turbo
 * Stepper drivers: BigTreeTech TMC2209
 * Display: Original Universal LCD 12864 Creality CR10
+* Bed: Creality Glass
 * Extruder:
   * Type: Direct
-  * Hotend: BMG Aero Volcano
-  * Gears: BMG Aero Volcano
+  * Hotend: Mellow BMG Aero Volcano
+  * Gears: Mellow BMG Aero
 
 ## Scripts
 
