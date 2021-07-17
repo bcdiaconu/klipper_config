@@ -110,11 +110,34 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
   1. layer height 75% of nozzle diameter (0.3 for 0.4 nozzle)
 1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
 1. and set the pressure_advance start and increment factor by sending either of the following commands:
+    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
   1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
   1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
 1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
 1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
 1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
+1. issue a `RESTART` command to restart the firmware
+
+## Retraction settings
+
+1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
+1. restart firmware by issuing `RESTART`
+1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=LENGTH START=0 FACTOR=.05`)
+  * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
+  * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
+  * the sample above uses a custom macro named `SET_RETRACTIONLENGTH`
+
+    ```conf
+    [gcode_macro SET_RETRACTIONLENGTH]
+    gcode:
+      SET_RETRACTION RETRACT_LENGTH={params.LENGTH|float}
+      GET_RETRACTION
+    ```
+
+1. start printing the object
+1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
+1. calculate the pressure advance by applying formula `<parameter> = <START> + <measured_height> * <FACTOR>`
+1. update the tuned parameter inside `[firmware_retraction]` section
 1. issue a `RESTART` command to restart the firmware
 
 ## More Info
@@ -126,3 +149,5 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 <https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md>
 
 <https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216>
+
+[Retraction Test Object](https://www.thingiverse.com/thing:4532977)
