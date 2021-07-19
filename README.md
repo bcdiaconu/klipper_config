@@ -105,24 +105,59 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
 1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
 1. setup the printer and generate g-code:
-  1. use high printing speeds (eg 100 mm/s)
-  1. set 0% infill
-  1. layer height 75% of nozzle diameter (0.3 for 0.4 nozzle)
+    1. use high printing speeds (eg 100 mm/s)
+    1. set 0% infill
+    1. layer height 75% of nozzle diameter (0.3 for 0.4 nozzle)
 1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
 1. and set the pressure_advance start and increment factor by sending either of the following commands:
-  1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
-  1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
+    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
+    1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
+    1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
 1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
 1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
 1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
 1. issue a `RESTART` command to restart the firmware
 
+## Retraction settings
+
+1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
+1. restart firmware by issuing `RESTART`
+1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.05`)
+    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
+    * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
+    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.05`
+
+    ```conf
+    [gcode_macro SET_RETRACTIONLENGTH]
+    gcode:
+      SET_RETRACTION RETRACT_LENGTH={params.RETRACT_LENGTH|firmware_retraction.retract_length|float} RETRACT_SPEED={params.RETRACT_SPEED|firmware_retraction.retract_speed|float} UNRETRACT_EXTRA_LENGTH={params.UNRETRACT_EXTRA_LENGTH|firmware_retraction.unretract_extra_length|float} UNRETRACT_SPEED={params.UNRETRACT_SPEED|firmware_retraction.unretract_speed|float}
+      GET_RETRACTION
+    ```
+
+1. setup slicer:
+    * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
+    * disable wipe (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
+    * enable use firmware retractions (PrusaSlicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
+1. slice the model to resulting `gcode` file
+1. check the `gcode` file:
+    * that it contains the `G10` and `G11` instructions
+    * that it does not contain any negative extrusion (eg: `G1 X18 Y32 E-3.42`)
+1. start printing the sliced object
+1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
+1. calculate the pressure advance by applying formula `<parameter> = <START> + <measured_height> * <FACTOR>`
+1. update the tuned parameter inside `[firmware_retraction]` section
+1. issue a `RESTART` command to restart the firmware
+
 ## More Info
 
-<https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md>
+[Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
 
-<https://www.klipper3d.org/Pressure_Advance.html>
+[Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
 
-<https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md>
+[Slicers macros](https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md)
 
-<https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216>
+[Start print macro sample](https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216)
+
+[Retraction Test Object](https://www.thingiverse.com/thing:4532977)
+
+[Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
