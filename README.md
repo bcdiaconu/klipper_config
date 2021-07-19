@@ -134,11 +134,14 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
       GET_RETRACTION
     ```
 
-1. setup slicer to:
+1. setup slicer:
     * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
     * disable wipe (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
     * enable use firmware retractions (PrusaSlicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
-1. check the `gcode` file that contains the `G10` and `G11` instructions
+1. slice the model to resulting `gcode` file
+1. check the `gcode` file:
+    * that it contains the `G10` and `G11` instructions
+    * that it does not contain any negative extrusion (eg: `G1 X18 Y32 E-3.42`)
 1. start printing the sliced object
 1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
 1. calculate the pressure advance by applying formula `<parameter> = <START> + <measured_height> * <FACTOR>`
