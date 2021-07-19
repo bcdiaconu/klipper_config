@@ -101,6 +101,14 @@ Issue a `PID_CALIBRATE HEATER=extruder TARGET=200` command
 
 Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
+## Printing temperature
+
+1. get a good model to test on (eg: [Smart compact temperature calibration tower](https://www.thingiverse.com/thing:2729076 "Smart compact temperature calibration tower on thingiverse"))
+1. set each section to appropriate temperature
+1. slice the model
+1. print the model
+1. update the slicer configuration based on findings (!) this might be influenced by other factors like pressure advance and retractions
+
 ## Pressure (Linear) advance
 
 1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
