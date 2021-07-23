@@ -130,10 +130,10 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
 1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
 1. restart firmware by issuing `RESTART`
-1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.05`)
+1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.01`)
     * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
     * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
-    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.05`
+    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.01`
 
     ```conf
     [gcode_macro SET_RETRACTIONLENGTH]
