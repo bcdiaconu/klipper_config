@@ -156,6 +156,29 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. update the tuned parameter inside `[firmware_retraction]` section
 1. issue a `RESTART` command to restart the firmware
 
+## Resonance compensation
+
+1. download the model from [here](https://www.klipper3d.org/prints/ringing_tower.stl)
+1. slice the model with settings:
+    * layer height 0.2
+    * enable vase mode (`Print Settings -> Permiteres&Shell -> Vertical shells -> Spiral vase`) or
+        * perimeters 1 - 2 (`Print Settings -> Permiteres&Shell -> Vertical shells -> Perimteres`)
+        * top layer 0 (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Solid layers`)
+        * infill 0% (`Print settings -> Infill -> Infill -> Sparse`)
+    * bottom layer 2mm (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Minimum shell thickness -> Bottom`)
+    * external perimtere speed 100mm/s (`Print Settings -> Speed -> Speed for print moves -> Perimter speed`)
+    * minimum layer time at most 3s (`Filament Settings -> Cooling -> Very short layer time -> Layer time goal`)
+    * disable dynamic acceleration control (``)
+1. setup Klipper:
+    1. `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
+    1. `SET_PRESSURE_ADVANCE ADVANCE=0`
+    1. `SET_INPUT_SHAPER SHAPER_FREQ_X=0 SHAPER_FREQ_Y=0`
+    1. `TUNING_TOWER COMMAND=SET_VELOCITY_LIMIT PARAMETER=ACCEL START=1250 FACTOR=100 BAND=5`; this command will increase the acceleration every 5 mm starting from 1250 mm/sec^2 and rising with `5*100` each step
+1. print model
+1. measure the distance between several oscillations on both axes (`=>` `D_x`, `D_y`)
+1. count the number of oscillations between measurements (starting from 0) (`=>` `N_x`, `N_y`)
+1. compute the ringing frequency (`F_k=V_k*N_k/D_k` `[Hz]`); `V` is the printing velocity of outer shells
+
 ## More Info
 
 [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
@@ -169,3 +192,5 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 [Retraction Test Object](https://www.thingiverse.com/thing:4532977)
 
 [Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
+
+[Resonance compensation](https://www.klipper3d.org/Resonance_Compensation.html)
