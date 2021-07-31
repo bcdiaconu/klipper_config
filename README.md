@@ -130,10 +130,10 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
 1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
 1. restart firmware by issuing `RESTART`
-1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.05`)
+1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.01`)
     * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
     * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
-    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.05`
+    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.01`
 
     ```conf
     [gcode_macro SET_RETRACTIONLENGTH]
@@ -156,6 +156,63 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. update the tuned parameter inside `[firmware_retraction]` section
 1. issue a `RESTART` command to restart the firmware
 
+## Resonance compensation
+
+### Finding the frequency
+
+1. download the `ringing_tower` model from [here](https://www.klipper3d.org/prints/ringing_tower.stl)
+1. slice the model with settings:
+    * layer height 0.2
+    * enable vase mode (`Print Settings -> Permiteres&Shell -> Vertical shells -> Spiral vase`) or
+        * perimeters 1 - 2 (`Print Settings -> Permiteres&Shell -> Vertical shells -> Perimteres`)
+        * top layer 0 (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Solid layers`)
+        * infill 0% (`Print settings -> Infill -> Infill -> Sparse`)
+    * bottom layer 2mm (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Minimum shell thickness -> Bottom`)
+    * external perimtere speed 100mm/s (`Print Settings -> Speed -> Speed for print moves -> Perimter speed`)
+    * minimum layer time at most 3s (`Filament Settings -> Cooling -> Very short layer time -> Layer time goal`)
+    * disable dynamic acceleration control (``)
+1. setup Klipper:
+    1. `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
+    1. `SET_PRESSURE_ADVANCE ADVANCE=0`
+    1. `SET_INPUT_SHAPER SHAPER_FREQ_X=0 SHAPER_FREQ_Y=0`
+    1. `TUNING_TOWER COMMAND=SET_VELOCITY_LIMIT PARAMETER=ACCEL START=1250 FACTOR=100 BAND=5`; this command will increase the acceleration every 5 mm starting from 1250 mm/sec^2 and rising with `5*100` each step
+1. print model
+1. measure the distance between several oscillations on both axes (`=>` `D_x`, `D_y`)
+1. count the number of oscillations between measurements (starting from 0) (`=>` `N_x`, `N_y`)
+1. compute the ringing frequency (`F_k=V_k*N_k/D_k` `[Hz]`); `V` is the printing velocity of outer shells
+1. add the `[input_shaper]` section in printer config file and the calculated values for frequency  `shaper_freq_x: <value>` and `shaper_freq_y: <value>`
+1. issues a `FIRMWARE_RESTART` command to restart the firmware
+
+### Fine tuning
+
+1. setup Klipper
+    1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
+    1. disable pressure advance `SET_PRESSURE_ADVANCE ADVANCE=0`
+    1. set the algorithm to MZV `SET_INPUT_SHAPER SHAPER_TYPE=ZV`
+    1. start tuning for acceleration on an axis `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_X START=<calculated_start_val> FACTOR=<calculated_factor> BAND=5` where:
+        * `calculated_start_val = crt_shaper_val * 83 / 132`
+        * `factor = crt_shaper_val / 66`
+        eg on x: `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_X START=20.4 FACTOR=0.4914 BAND=5`
+        eg on y: `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_Y START=23.95 FACTOR=0.5772 BAND=5`
+1. re-print the `ringing_tower` model
+1. count the number of bands till best result (`=>` `band_number`)
+1. calculate the new frequency `new_shaper_frequency = crt_shaper_val * (39 + 5 * band_number) / 66`
+
+### Selecting algorithm
+
+1. setup Klipper:
+    1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
+    1. disable pressure advance `SET_PRESSURE_ADVANCE ADVANCE=0`
+    1. set the algorithm to MZV `SET_INPUT_SHAPER SHAPER_TYPE=MZV`
+    1. start tuning for acceleration `TUNING_TOWER COMMAND=SET_VELOCITY_LIMIT PARAMETER=ACCEL START=1250 FACTOR=100 BAND=5`
+1. re-print the `ringing_tower` model
+1. check the printed model
+1. change the algorithm to `EI` by issuing `SET_INPUT_SHAPER SHAPER_TYPE=EI`
+1. re-print one again the `ringing_tower` model
+1. check for best results:
+    1. if the print still shows ringing
+    1. the gaps are 0.15 mm so there should not be a big gap; if there is no gap, most likely it can be fixed with pressure advance setting
+
 ## More Info
 
 [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
@@ -169,3 +226,5 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 [Retraction Test Object](https://www.thingiverse.com/thing:4532977)
 
 [Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
+
+[Resonance compensation](https://www.klipper3d.org/Resonance_Compensation.html)
