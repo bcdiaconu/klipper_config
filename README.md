@@ -109,23 +109,6 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. print the model
 1. update the slicer configuration based on findings (!) this might be influenced by other factors like pressure advance and retractions
 
-## Pressure (Linear) advance
-
-1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
-1. setup the printer and generate g-code:
-    1. use high printing speeds (eg 100 mm/s)
-    1. set 0% infill
-    1. layer height 75% of nozzle diameter (0.3 for 0.4 nozzle)
-1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
-1. and set the pressure_advance start and increment factor by sending either of the following commands:
-    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
-    1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
-    1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
-1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
-1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
-1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
-1. issue a `RESTART` command to restart the firmware
-
 ## Retraction settings
 
 1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
@@ -212,6 +195,27 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. check for best results:
     1. if the print still shows ringing
     1. the gaps are 0.15 mm so there should not be a big gap; if there is no gap, most likely it can be fixed with pressure advance setting
+
+## Pressure (Linear) advance
+
+1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
+1. and set the pressure_advance start and increment factor by sending either of the following commands:
+    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
+    1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
+    1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
+1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
+1. setup the printer:
+    * use high printing speeds (eg 100 mm/s) (`Print Settings -> Speed -> Speed for print moves -> all with mm/s`)
+    * infill 0% (`Print settings -> Infill -> Infill -> Sparse`)
+    * layer height 75% of nozzle diameter (0.3 for 0.4 nozzle) (`Print Settings -> Slicing -> Layer height  -> Base layer height`)
+1. check the layer speeds inside silicer (on the sliced object); if speeds are not the set ones:
+    * increase the number of permiter walls (`Print Settings -> Permiters & Shell -> Vertical shells -> Perimteres`)
+    * increase the infill (`Print settings -> Infill -> Infill -> Sparse`)
+1. when everything checks out, slice and print
+1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
+1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
+1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
+1. issue a `RESTART` command to restart the firmware
 
 ## More Info
 
