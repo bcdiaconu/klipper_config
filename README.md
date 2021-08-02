@@ -116,14 +116,6 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.01`)
     * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
     * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
-    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.01`
-
-    ```conf
-    [gcode_macro SET_RETRACTIONLENGTH]
-    gcode:
-      SET_RETRACTION RETRACT_LENGTH={params.RETRACT_LENGTH|firmware_retraction.retract_length|float} RETRACT_SPEED={params.RETRACT_SPEED|firmware_retraction.retract_speed|float} UNRETRACT_EXTRA_LENGTH={params.UNRETRACT_EXTRA_LENGTH|firmware_retraction.unretract_extra_length|float} UNRETRACT_SPEED={params.UNRETRACT_SPEED|firmware_retraction.unretract_speed|float}
-      GET_RETRACTION
-    ```
 
 1. setup slicer:
     * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
@@ -226,6 +218,8 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 [Slicers macros](https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md)
 
 [Start print macro sample](https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216)
+
+[Macros](https://www.klipper3d.org/G-Codes.html)
 
 [Retraction Test Object](https://www.thingiverse.com/thing:4532977)
 
