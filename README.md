@@ -21,6 +21,20 @@
   * Hotend: Mellow BMG Aero Volcano
   * Gears: Mellow BMG Aero
 
+## Install Klipper
+
+Klipper can be easely installed by using KIAUH linux app.
+
+## Install config
+
+### Using SSH
+
+Printer configuration is located at `~/printer_data/config`.
+
+### Using web interface
+
+Printer configuration can be modified in Klipper web by accessing the menu `Configuration` (keyboard shortcut `X`).
+
 ## Scripts
 
 ### Start
@@ -227,6 +241,8 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. issue a `RESTART` command to restart the firmware
 
 ## More Info
+
+[KIAUH repository](https://github.com/dw-0/kiauh)
 
 [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
 
