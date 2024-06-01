@@ -3,7 +3,16 @@
 ## Hardware in use
 
 * Frame: Ender 3 Pro (v1)
-* Mainboard: BigTreeTech SKR v1.4 Turbo
+  * X axis
+    * transmission: belt
+    * rail: linear rail
+  * Y axis
+    * transmission: belt
+    * rail: linear rail
+  * Z axis
+    * transmission: dual lead screw
+    * rails: triple V-Wheels on V-Slots
+* Main Board: BigTreeTech SKR v1.4 Turbo
 * Stepper drivers: BigTreeTech TMC2209
 * Display: Original Universal LCD 12864 Creality CR10
 * Bed: Creality Glass
