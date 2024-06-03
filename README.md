@@ -35,6 +35,17 @@ Printer configuration is located at `~/printer_data/config`.
 
 Printer configuration can be modified in Klipper web by accessing the menu `Configuration` (keyboard shortcut `X`).
 
+## Flash or update MCU firmware
+
+`cd ~/klipper/ && make menuconfig`
+
+Set the following:
+
+```bash
+Micro-controller Architecture (LPC176x (Smoothieboard))
+Processor model (lpc1769 (120 MHz))
+```
+
 ## Scripts
 
 ### Start
@@ -245,6 +256,8 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 [KIAUH repository](https://github.com/dw-0/kiauh)
 
 [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
+
+[Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
 
 [Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
 
