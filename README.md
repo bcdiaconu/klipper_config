@@ -173,62 +173,87 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. update the tuned parameter inside `[firmware_retraction]` section
 1. issue a `RESTART` command to restart the firmware
 
-## Resonance compensation
+## Resonance compensation [^resonance_measurement]
+
+### Depenedencies
+
+#### Prepare environment
+
+1. Install needed libs
+
+    ```bash
+    sudo apt update
+    sudo apt install python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev
+    ```
+
+1. Install python libs
+
+    ```bash
+    ~/klippy-env/bin/pip install -v numpy
+    ~/klippy-env/bin/pip install -v serial
+    ```
+
+1. Enable the SPI on Raspberry PI
+
+    ```bash
+    sudo raspi-config
+    ```
+
+#### Make the RPI a secondary MCU [^rpi_as_secondary_mcu]
+
+1. Enable the klipper-mcu service
+
+    ```bash
+    cd ~/klipper/
+    sudo cp ./scripts/klipper-mcu.service /etc/systemd/system/
+    sudo systemctl enable klipper-mcu.service
+    ```
+
+1. Change configuration to build for the Raspberry PI
+
+    ```bash
+    cd ~/klipper/
+    sudo cp ./scripts/klipper-mcu.service /etc/systemd/system/
+    sudo systemctl enable klipper-mcu.service
+    ```
+
+    Set "Microcontroller Architecture" to "Linux process," then save and exit.
+
+1. Build and install the firmware on the Raspberry PI
+
+    ```bash
+    sudo service klipper stop
+    make flash
+    sudo service klipper start
+    ```
+
+1. (Optional) If issues with permission add current user `pi` to `tty` group
+
+    ```bash
+    sudo usermod -a -G tty pi
+    ```
+
+### Test communication
+
+In klipper console type:
+
+`ACCELEROMETER_QUERY CHIP=adxl345`
 
 ### Finding the frequency
 
-1. download the `ringing_tower` model from [here](https://www.klipper3d.org/prints/ringing_tower.stl)
-1. slice the model with settings:
-    * layer height 0.2
-    * enable vase mode (`Print Settings -> Permiteres&Shell -> Vertical shells -> Spiral vase`) or
-        * perimeters 1 - 2 (`Print Settings -> Permiteres&Shell -> Vertical shells -> Perimteres`)
-        * top layer 0 (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Solid layers`)
-        * infill 0% (`Print settings -> Infill -> Infill -> Sparse`)
-    * bottom layer 2mm (`Print Settings -> Permiteres&Shell -> Horizontal shells -> Minimum shell thickness -> Bottom`)
-    * external perimtere speed 100mm/s (`Print Settings -> Speed -> Speed for print moves -> Perimter speed`)
-    * minimum layer time at most 3s (`Filament Settings -> Cooling -> Very short layer time -> Layer time goal`)
-    * disable dynamic acceleration control (``)
-1. setup Klipper:
-    1. `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
-    1. `SET_PRESSURE_ADVANCE ADVANCE=0`
-    1. `SET_INPUT_SHAPER SHAPER_FREQ_X=0 SHAPER_FREQ_Y=0`
-    1. `TUNING_TOWER COMMAND=SET_VELOCITY_LIMIT PARAMETER=ACCEL START=1250 FACTOR=100 BAND=5`; this command will increase the acceleration every 5 mm starting from 1250 mm/sec^2 and rising with `5*100` each step
-1. print model
-1. measure the distance between several oscillations on both axes (`=>` `D_x`, `D_y`)
-1. count the number of oscillations between measurements (starting from 0) (`=>` `N_x`, `N_y`)
-1. compute the ringing frequency (`F_k=V_k*N_k/D_k` `[Hz]`); `V` is the printing velocity of outer shells
-1. add the `[input_shaper]` section in printer config file and the calculated values for frequency  `shaper_freq_x: <value>` and `shaper_freq_y: <value>`
-1. issues a `FIRMWARE_RESTART` command to restart the firmware
+1. connect the accelerator board to the Raspberry PI [^adxl345_hardware_connection]
+1. Find resonance for axis X `TEST_RESONANCES AXIS=X` this will generate a `.csv` file in `/tmp/`
+1. Find resonance for axis Y `TEST_RESONANCES AXIS=Y` this will generate a `.csv` file in `/tmp/`
+1. Analyze `.csv` files for each of the axis by using the `calibrate_shaper.py` tool
 
-### Fine-tuning
+    ```bash
+    ~/klipper/scripts/calibrate_shaper.py /tmp/resonances_x_*.csv -o /tmp/shaper_calibrate_x.png
+    ~/klipper/scripts/calibrate_shaper.py /tmp/resonances_y_*.csv -o /tmp/shaper_calibrate_y.png
+    ```
 
-1. setup Klipper
-    1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
-    1. disable pressure advance `SET_PRESSURE_ADVANCE ADVANCE=0`
-    1. set the algorithm to MZV `SET_INPUT_SHAPER SHAPER_TYPE=ZV`
-    1. start tuning for acceleration on an axis `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_X START=<calculated_start_val> FACTOR=<calculated_factor> BAND=5` where:
-        * `calculated_start_val = crt_shaper_val * 83 / 132`
-        * `factor = crt_shaper_val / 66`
-        eg on x: `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_X START=20.4 FACTOR=0.4914 BAND=5`
-        eg on y: `TUNING_TOWER COMMAND=SET_INPUT_SHAPER PARAMETER=SHAPER_FREQ_Y START=23.95 FACTOR=0.5772 BAND=5`
-1. re-print the `ringing_tower` model
-1. count the number of bands till best result (`=>` `band_number`)
-1. calculate the new frequency `new_shaper_frequency = crt_shaper_val * (39 + 5 * band_number) / 66`
-
-### Selecting algorithm
-
-1. setup Klipper:
-    1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
-    1. disable pressure advance `SET_PRESSURE_ADVANCE ADVANCE=0`
-    1. set the algorithm to MZV `SET_INPUT_SHAPER SHAPER_TYPE=MZV`
-    1. start tuning for acceleration `TUNING_TOWER COMMAND=SET_VELOCITY_LIMIT PARAMETER=ACCEL START=1250 FACTOR=100 BAND=5`
-1. re-print the `ringing_tower` model
-1. check the printed model
-1. change the algorithm to `EI` by issuing `SET_INPUT_SHAPER SHAPER_TYPE=EI`
-1. re-print one again the `ringing_tower` model
-1. check for best results:
-    1. if the print still shows ringing
-    1. the gaps are 0.15 mm so there should not be a big gap; if there is no gap, most likely it can be fixed with pressure advance setting
+1. The output of last step:
+    1. the console output contains the final result with recommended shaper and the resonance frequency
+    1. are two `.png` files which contain details about the analysis results
 
 ## Pressure (Linear) advance
 
@@ -259,20 +284,26 @@ Travel Acceleration:
 
 ## More Info
 
-[KIAUH repository](https://github.com/dw-0/kiauh)
+[^1]: [KIAUH repository](https://github.com/dw-0/kiauh)
 
-[Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
+[2]: [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
 
-[Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
+[3]: [Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
 
-[Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
+[4]: [Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
 
-[Slicers macros](https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md)
+[5]: [Slicers macros](https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md)
 
-[Start print macro sample](https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216)
+[6]: [Start print macro sample](https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216)
 
-[Retraction Test Object](https://www.thingiverse.com/thing:4532977)
+[7]: [Retraction Test Object](https://www.thingiverse.com/thing:4532977)
 
-[Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
+[8]: [Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
 
-[Resonance compensation](https://www.klipper3d.org/Resonance_Compensation.html)
+[^resonance_measurement]: [Measuring resonances](https://www.klipper3d.org/Measuring_Resonances.html)
+
+[10]: [Resonance compensation](https://www.klipper3d.org/Resonance_Compensation.html)
+
+[^rpi_as_secondary_mcu]: [RPi microcontroller as a secondary MCU](https://www.klipper3d.org/RPi_microcontroller.html)
+
+[^adxl345_hardware_connection]: [ADXL345 SPI hardware connection](https://www.klipper3d.org/Measuring_Resonances.html#direct-to-raspberry-pi)
