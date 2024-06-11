@@ -3,7 +3,16 @@
 ## Hardware in use
 
 * Frame: Ender 3 Pro (v1)
-* Mainboard: BigTreeTech SKR v1.4 Turbo
+  * X axis
+    * transmission: belt
+    * rail: linear rail
+  * Y axis
+    * transmission: belt
+    * rail: linear rail
+  * Z axis
+    * transmission: dual lead screw
+    * rails: triple V-Wheels on V-Slots
+* Main Board: BigTreeTech SKR v1.4 Turbo
 * Stepper drivers: BigTreeTech TMC2209
 * Display: Original Universal LCD 12864 Creality CR10
 * Bed: Creality Glass
@@ -11,6 +20,31 @@
   * Type: Direct
   * Hotend: Mellow BMG Aero Volcano
   * Gears: Mellow BMG Aero
+
+## Install Klipper
+
+Klipper can be easely installed by using KIAUH linux app.
+
+## Install config
+
+### Using SSH
+
+Printer configuration is located at `~/printer_data/config`.
+
+### Using web interface
+
+Printer configuration can be modified in Klipper web by accessing the menu `Configuration` (keyboard shortcut `X`).
+
+## Flash or update MCU firmware
+
+`cd ~/klipper/ && make menuconfig`
+
+Set the following:
+
+```bash
+Micro-controller Architecture (LPC176x (Smoothieboard))
+Processor model (lpc1769 (120 MHz))
+```
 
 ## Scripts
 
@@ -166,7 +200,7 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. add the `[input_shaper]` section in printer config file and the calculated values for frequency  `shaper_freq_x: <value>` and `shaper_freq_y: <value>`
 1. issues a `FIRMWARE_RESTART` command to restart the firmware
 
-### Fine tuning
+### Fine-tuning
 
 1. setup Klipper
     1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
@@ -217,9 +251,19 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
 1. issue a `RESTART` command to restart the firmware
 
+## Slicer settings
+
+Travel Acceleration:
+
+* 7000 does not skip on X but skips on Y axis
+
 ## More Info
 
+[KIAUH repository](https://github.com/dw-0/kiauh)
+
 [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
+
+[Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
 
 [Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
 
