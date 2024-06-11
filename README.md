@@ -200,7 +200,7 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. add the `[input_shaper]` section in printer config file and the calculated values for frequency  `shaper_freq_x: <value>` and `shaper_freq_y: <value>`
 1. issues a `FIRMWARE_RESTART` command to restart the firmware
 
-### Fine tuning
+### Fine-tuning
 
 1. setup Klipper
     1. set velocity and acceleration to a high value `SET_VELOCITY_LIMIT VELOCITY=500 ACCEL=7000 ACCEL_TO_DECEL=7000 SQUARE_CORNER_VELOCITY=5.0`
@@ -250,6 +250,12 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
 1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
 1. issue a `RESTART` command to restart the firmware
+
+## Slicer settings
+
+Travel Acceleration:
+
+* 7000 does not skip on X but skips on Y axis
 
 ## More Info
 
