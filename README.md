@@ -190,7 +190,7 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
     ```bash
     ~/klippy-env/bin/pip install -v numpy
-    ~/klippy-env/bin/pip install -v serial
+    /usr/bin/python3 -m pip install pyserial --break-system-packages
     ```
 
 1. Enable the SPI on Raspberry PI
