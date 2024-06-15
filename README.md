@@ -37,20 +37,22 @@ Printer configuration can be modified in Klipper web by accessing the menu `Conf
 
 ## Flash or update MCU firmware
 
-`cd ~/klipper/ && make menuconfig`
+1. `cd ~/klipper/ && make menuconfig`
 
-Set the following:
+    * Set the following:
 
-```bash
-Micro-controller Architecture (LPC176x (Smoothieboard))
-Processor model (lpc1769 (120 MHz))
-```
+    ```bash
+    Micro-controller Architecture (LPC176x (Smoothieboard))
+    Processor model (lpc1769 (120 MHz))
+    ```
+
+1. `make flash`
 
 ## Scripts
 
-### Start
+The following gcodes are valid for `OrcaSlicer`, `PrusaSlicer` or `SuperSlicer`.
 
-For `PrusaSlicer` or `SuperSlicer` the startup gcode would be similar to:
+### Start
 
 ```gcode
 START_PRINT FIRST_LAYER_BED_TEMP=[first_layer_bed_temperature] FIRST_LAYER_NOZZLE_TEMP=[first_layer_temperature]
@@ -66,21 +68,7 @@ END_PRINT
 
 ### X and Y axes calibration
 
-1. home the machine with `G28`
-1. place peace of tape on the center of the bed
-1. move the bltouch in a convenient postion just on top of the tape and such that when the probe is deployed it will touch the bed but still be almost fully extended
-1. deploy the probe with `BLTOUCH_DEBUG COMMAND=pin_down`
-1. mark the location where the probe touches the tape
-1. retract the probe with `BLTOUCH_DEBUG COMMAND=reset`
-1. start probing: `probe`
-1. get current position by issuing `GET_POSITION`
-1. note the `toolhead` coordinates
-1. move the nozzle on top of the mark with `G1` command eg: `G1 F300 X118.5 Y116.5 Z1.8`; repeat move until the nozzle sits just on top of the mark made on tape
-1. to be sure, get current position by issuing `GET_POSITION` and receiving
-1. probe_offset_x = nozzle_x_position - probe_x_position; probe_offset_y = nozzle_y_position - probe_y_position
-1. save configuration in `printer.cfg` under `[bltouch]` cathegory
-1. restart firmware by issuing `RESTART`
-1. remove the tape off the bed
+X and Y axes calibration can be achieved by using the CaliFlower calibrator. [^califlower_calibrator]
 
 ### Z axis calibration
 
@@ -137,28 +125,16 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
 ## Printing temperature
 
-1. get a good model to test on (eg: [Smart compact temperature calibration tower](https://www.thingiverse.com/thing:2729076 "Smart compact temperature calibration tower on thingiverse"))
-1. set each section to appropriate temperature
-1. slice the model
-1. print the model
-1. update the slicer configuration based on findings (!) this might be influenced by other factors like pressure advance and retractions
+OrcaSlicer provides built-in calibration model [^orca_calibration] for temperature. See calibration menu.
 
 ## Retraction settings
 
-1. set inside `[firmware_retraction]` section, the initial values for parameters `retract_length`, `retract_speed`, `unretract_extra_length`, `unretract_speed`
-1. restart firmware by issuing `RESTART`
-1. issue a `TUNING_TOWER` command that tunes a specific `parameter` (eg: for retraction length: `TUNING_TOWER COMMAND=SET_RETRACTION PARAMETER=LENGTH START=0 FACTOR=.01`)
-    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
-    * command_parameter for `SET_RETRACTION` are: `RETRACT_LENGTH`, `RETRACT_SPEED`, `UNRETRACT_EXTRA_LENGTH`, `UNRETRACT_SPEED`
-    * for feedback reasons, can be used a custom macro named `SET_RETRACTIONLENGTH` issuing `TUNING_TOWER COMMAND=SET_RETRACTIONLENGTH PARAMETER=RETRACT_LENGTH START=0 FACTOR=.01`
+OrcaSlicer provides built-in calibration model [^orca_calibration] for retractions. See calibration menu.
 
-    ```conf
-    [gcode_macro SET_RETRACTIONLENGTH]
-    gcode:
-      SET_RETRACTION RETRACT_LENGTH={params.RETRACT_LENGTH|firmware_retraction.retract_length|float} RETRACT_SPEED={params.RETRACT_SPEED|firmware_retraction.retract_speed|float} UNRETRACT_EXTRA_LENGTH={params.UNRETRACT_EXTRA_LENGTH|firmware_retraction.unretract_extra_length|float} UNRETRACT_SPEED={params.UNRETRACT_SPEED|firmware_retraction.unretract_speed|float}
-      GET_RETRACTION
-    ```
+Once the proper value was calculated according the described procedure in documentation, update Klipper settings and update the slicer:
 
+1. update the tuned parameter inside `[firmware_retraction]` section
+1. issue a `RESTART` command to restart the firmware
 1. setup slicer:
     * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
     * disable wipe (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
@@ -206,6 +182,10 @@ SKEW_PROFILE LOAD=CaliFlower
     ```
 
 #### Make the RPI a secondary MCU [^rpi_as_secondary_mcu]
+
+To be able to use the SPI, I2C or any other protocol from Raspberry PI, the RPI board needs to be made a secondary MCU.
+
+Steps below describe how to make Raspberry PI a secondary MCU.
 
 1. Enable the klipper-mcu service
 
@@ -261,27 +241,6 @@ In klipper console type:
     1. the console output contains the final result with recommended shaper and the resonance frequency
     1. are two `.png` files which contain details about the analysis results
 
-## Pressure (Linear) advance
-
-1. send the follwing command to printer `SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500`
-1. and set the pressure_advance start and increment factor by sending either of the following commands:
-    * syntax: `TUNING_TOWER COMMAND=<command_to_issue> PARAMETER=<command_parameter> START=<initial_value> FACTOR=<increase_factor_per_layer>`
-    1. for direct drive `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005`
-    1. for bowden `TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020`
-1. download the file from [here](https://www.klipper3d.org/prints/square_tower.stl "stl file to download")
-1. setup the printer:
-    * use high printing speeds (eg 100 mm/s) (`Print Settings -> Speed -> Speed for print moves -> all with mm/s`)
-    * infill 0% (`Print settings -> Infill -> Infill -> Sparse`)
-    * layer height 75% of nozzle diameter (0.3 for 0.4 nozzle) (`Print Settings -> Slicing -> Layer height  -> Base layer height`)
-1. check the layer speeds inside silicer (on the sliced object); if speeds are not the set ones:
-    * increase the number of permiter walls (`Print Settings -> Permiters & Shell -> Vertical shells -> Perimteres`)
-    * increase the infill (`Print settings -> Infill -> Infill -> Sparse`)
-1. when everything checks out, slice and print
-1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
-1. calculate the pressure advance by applying formula `pressure_advance = <START> + <measured_height> * <FACTOR>`
-1. under `[extruder]` section, add the resulted value eg: `pressure_advance: 0.0614`
-1. issue a `RESTART` command to restart the firmware
-
 ## Slicer settings
 
 Travel Acceleration:
@@ -313,5 +272,7 @@ Travel Acceleration:
 [^rpi_as_secondary_mcu]: [RPi microcontroller as a secondary MCU](https://www.klipper3d.org/RPi_microcontroller.html)
 
 [^adxl345_hardware_connection]: [ADXL345 SPI hardware connection](https://www.klipper3d.org/Measuring_Resonances.html#direct-to-raspberry-pi)
+
+[^orca_calibration]: [OrcaSlicer calibration](https://github.com/SoftFever/OrcaSlicer/wiki/Calibration)
 
 [^califlower_calibrator]: [CaliFlower Calibrator] (https://vector3d.shop/products/califlower-calibration)
