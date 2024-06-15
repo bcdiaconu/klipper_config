@@ -163,15 +163,21 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
     * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
     * disable wipe (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
     * enable use firmware retractions (PrusaSlicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
-1. slice the model to resulting `gcode` file
-1. check the `gcode` file:
-    * that it contains the `G10` and `G11` instructions
-    * that it does not contain any negative extrusion (eg: `G1 X18 Y32 E-3.42`)
-1. start printing the sliced object
-1. with calipers measure the height from bottom till the layer that seems to produce best results (`measured_height`)
-1. calculate the pressure advance by applying formula `<parameter> = <START> + <measured_height> * <FACTOR>`
-1. update the tuned parameter inside `[firmware_retraction]` section
-1. issue a `RESTART` command to restart the firmware
+
+## Skew
+
+Skew can be determined and corrected after determining the parameters for it.
+
+A calibrator for Skew is the CaliFlower calibrator. [^califlower_calibrator]
+
+Commands to add skew data with determined values:
+
+```klipper
+SET_SKEW XY=99.79,100.31,70.6
+SKEW_PROFILE SAVE=CaliFlower
+SAVE_CONFIG
+SKEW_PROFILE LOAD=CaliFlower
+```
 
 ## Resonance compensation [^resonance_measurement]
 
@@ -307,3 +313,5 @@ Travel Acceleration:
 [^rpi_as_secondary_mcu]: [RPi microcontroller as a secondary MCU](https://www.klipper3d.org/RPi_microcontroller.html)
 
 [^adxl345_hardware_connection]: [ADXL345 SPI hardware connection](https://www.klipper3d.org/Measuring_Resonances.html#direct-to-raspberry-pi)
+
+[^califlower_calibrator]: [CaliFlower Calibrator] (https://vector3d.shop/products/califlower-calibration)
