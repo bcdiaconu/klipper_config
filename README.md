@@ -48,6 +48,16 @@ Printer configuration can be modified in Klipper web by accessing the menu `Conf
 
 1. `make flash`
 
+## Cameras
+
+### Install
+
+1. install `crowsnest` via `kiauh`
+    * select `Y` to update moonraker configuration
+1. copy `crowsnest.cfg` to klipper printer configuration directory
+1. add camera in fluidd settings
+1. restart klipper host
+
 ## Scripts
 
 The following gcodes are valid for `OrcaSlicer`, `PrusaSlicer` or `SuperSlicer`.
