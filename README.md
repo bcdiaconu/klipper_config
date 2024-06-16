@@ -56,6 +56,7 @@ Printer configuration can be modified in Klipper web by accessing the menu `Conf
     * select `Y` to update moonraker configuration
 1. copy `crowsnest.cfg` to klipper printer configuration directory
 1. add camera in fluidd settings
+    * a mapping information with `port-number` / `web address suffix` for cameras can be found in the `crownest.cfg` file
 1. restart klipper host
 
 ## Scripts
