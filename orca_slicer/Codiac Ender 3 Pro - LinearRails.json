@@ -1,0 +1,36 @@
+{
+    "from": "User",
+    "inherits": "MyKlipper 0.4 nozzle",
+    "is_custom_defined": "0",
+    "machine_max_acceleration_extruding": [
+        "5000",
+        "20000"
+    ],
+    "machine_max_acceleration_x": [
+        "4000",
+        "12800"
+    ],
+    "machine_max_acceleration_y": [
+        "3500",
+        "4500"
+    ],
+    "machine_max_acceleration_travel": [
+        "3500",
+        "4500"
+    ],
+    "name": "Codiac Ender 3 Pro - LinearRails",
+    "nozzle_type": "brass",
+    "print_host": "3dprinter001.iveronsoft.ro",
+    "printable_area": [
+        "0x0",
+        "235x0",
+        "235x202",
+        "0x202"
+    ],
+    "printable_height": "247",
+    "printer_settings_id": "Codiac Ender 3 Pro - LinearRails",
+    "retraction_length": [
+        "0"
+    ],
+    "version": "2.0.2.0"
+}
