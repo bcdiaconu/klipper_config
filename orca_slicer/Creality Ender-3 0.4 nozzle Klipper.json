@@ -1,0 +1,23 @@
+{
+    "from": "User",
+    "gcode_flavor": "klipper",
+    "inherits": "Creality Ender-3 0.4 nozzle",
+    "is_custom_defined": "0",
+    "name": "Creality Ender-3 0.4 nozzle Klipper",
+    "print_host": "3dprinter001.iveronsoft.ro",
+    "printable_area": [
+        "0x0",
+        "265x0",
+        "265x202",
+        "0x202"
+    ],
+    "printable_height": "247",
+    "printer_settings_id": "Creality Ender-3 0.4 nozzle Klipper",
+    "retraction_length": [
+        "0"
+    ],
+    "version": "2.0.2.0",
+    "z_hop_types": [
+        "Auto Lift"
+    ]
+}

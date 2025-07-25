@@ -23,7 +23,17 @@
 
 ## Install Klipper
 
-Klipper can be easely installed by using KIAUH linux app.
+Klipper can be easely installed by using KIAUH[^kiauh_repo] linux app from within Raspberry PI.
+
+Through KIAUH, the following apps are to be installed:
+
+* Klipper
+* Moonraker
+* Fluidd
+* KlipperScreen
+* Mobileraker
+* Spoolman
+* Crowsnest
 
 ## Install config
 
@@ -36,6 +46,14 @@ Printer configuration is located at `~/printer_data/config`.
 Printer configuration can be modified in Klipper web by accessing the menu `Configuration` (keyboard shortcut `X`).
 
 ## Flash or update MCU firmware
+
+Klipper can be flashed on 3D Printer's MCU either by using KIAUH menu or manually.
+
+### Flash through KIAUH
+
+3D Printer's MCU can be flashed by running KIAUH interface than choosing the `Advanced` menu followed by `Build + Flash`.
+
+### Manual Flashing[^klipper_build_flash]
 
 1. `cd ~/klipper/ && make menuconfig`
 
@@ -175,7 +193,7 @@ SKEW_PROFILE LOAD=CaliFlower
 
     ```bash
     sudo apt update
-    sudo apt install python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev
+    sudo apt install -y python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev
     ```
 
 1. Install python libs
@@ -190,6 +208,8 @@ SKEW_PROFILE LOAD=CaliFlower
     ```bash
     sudo raspi-config
     ```
+
+    `Interface Option` -> `SPI` -> `Yes`
 
 #### Make the RPI a secondary MCU [^rpi_as_secondary_mcu]
 
@@ -209,8 +229,7 @@ Steps below describe how to make Raspberry PI a secondary MCU.
 
     ```bash
     cd ~/klipper/
-    sudo cp ./scripts/klipper-mcu.service /etc/systemd/system/
-    sudo systemctl enable klipper-mcu.service
+    make menuconfig
     ```
 
     Set "Microcontroller Architecture" to "Linux process," then save and exit.
@@ -259,11 +278,11 @@ Travel Acceleration:
 
 ## More Info
 
-[^1]: [KIAUH repository](https://github.com/dw-0/kiauh)
+[^kiauh_repo]: [KIAUH repository](https://github.com/dw-0/kiauh)
 
 [2]: [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
 
-[3]: [Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
+[^klipper_build_flash]: [Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
 
 [4]: [Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
 
