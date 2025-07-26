@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VSCode settings
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Slicer generated files
+*.gcode
+*.3mf
+*.stl
+
+# Klipper backup and state files
+printer_data/
+*.cfg.bak
+*.old
+
+# FlashMagic temp files
+flashmagic/*.tmp
+flashmagic/*.bak
+
+# OrcaSlicer cache
+orca_slicer/cache/
+orca_slicer/*.bak
+
+# Ignore
