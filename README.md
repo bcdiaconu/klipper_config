@@ -8,22 +8,23 @@
     * rail: linear rail
   * Y axis
     * transmission: belt
-    * rail: linear rail
+    * rail: dual linear rail
   * Z axis
     * transmission: dual lead screw
     * rails: triple V-Wheels on V-Slots
+    * sync belt for z-screws
 * Main Board: BigTreeTech SKR v1.4 Turbo
 * Stepper drivers: BigTreeTech TMC2209
 * Display: Original Universal LCD 12864 Creality CR10
 * Bed: Creality Glass
 * Extruder:
   * Type: Direct
-  * Hotend: Mellow BMG Aero Volcano
-  * Gears: Mellow BMG Aero
+  * Hotend: Creality Sprite Pro
+  * Gears: Creality Sprite Pro
 
 ## Install Klipper
 
-Klipper can be easely installed by using KIAUH[^kiauh_repo] linux app from within Raspberry PI.
+Klipper can be easily installed by using KIAUH[^kiauh_repo] linux app from within Raspberry PI.
 
 Through KIAUH, the following apps are to be installed:
 
@@ -78,7 +79,7 @@ Klipper can be flashed on 3D Printer's MCU either by using KIAUH menu or manuall
 
 ## Scripts
 
-The following gcodes are valid for `OrcaSlicer`, `PrusaSlicer` or `SuperSlicer`.
+The following gcodes are valid for `Orca Slicer`, `Prusa Slicer` or `SuperSlicer`.
 
 ### Start
 
@@ -98,17 +99,19 @@ END_PRINT
 
 X and Y axes calibration can be achieved by using the CaliFlower calibrator. [^califlower_calibrator]
 
+If required calibration on all 3 axes, CaliLantern calibrator can be used. [^calilantern_calibrator]
+
 ### Z axis calibration
 
 1. set a big `z_offset` value under `[bltouch]` section, in `printer.cfg` file
 1. restart the firmware
-1. make sure the nozzle is clean of plastics; also the the bed surface is flat and free of debree
+1. make sure the nozzle is clean of plastics; also the the bed surface is flat and free of debris
 1. home the machine with `G28`
 1. issue a `PROBE_CALIBRATE` command
 1. if the nozzle does not move to a position above the automatic probe point, then issue `ABORT` and perform the XY probe offset calibration
-1. get the returned Z position and substract or add a distance dz by issuing `TESTZ Z=-dz`
+1. get the returned Z position and subtract or add a distance dz by issuing `TESTZ Z=-dz`
 1. check with the thickness of a paper the distance between the nozzle and the bed
-1. repet substracting or adding by issuing `TESTZ` command until distance is met; by issuing `TESTZ Z=+` will add (or substract if `Z=-`) half the distance last used
+1. repeat subtracting or adding by issuing `TESTZ` command until distance is met; by issuing `TESTZ Z=+` will add (or subtract if `Z=-`) half the distance last used
 1. when accuracy is met issue a `ACCEPT` command
 1. save the setting by issuing `SAVE_CONFIG`
 1. restart firmware by issuing `RESTART`
@@ -153,26 +156,28 @@ Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
 
 ## Printing temperature
 
-OrcaSlicer provides built-in calibration model [^orca_calibration] for temperature. See calibration menu.
+Orca Slicer provides built-in calibration model [^orca_calibration] for temperature. See calibration menu.
 
 ## Retraction settings
 
-OrcaSlicer provides built-in calibration model [^orca_calibration] for retractions. See calibration menu.
+Orca Slicer provides built-in calibration model [^orca_calibration] for retractions. See calibration menu.
 
 Once the proper value was calculated according the described procedure in documentation, update Klipper settings and update the slicer:
 
 1. update the tuned parameter inside `[firmware_retraction]` section
 1. issue a `RESTART` command to restart the firmware
 1. setup slicer:
-    * set 0 retraction length (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
-    * disable wipe (PrusaSlicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
-    * enable use firmware retractions (PrusaSlicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
+    * set 0 retraction length (Prusa Slicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
+    * disable wipe (Prusa Slicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
+    * enable use firmware retractions (Prusa Slicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
 
 ## Skew
 
 Skew can be determined and corrected after determining the parameters for it.
 
 A calibrator for Skew is the CaliFlower calibrator. [^califlower_calibrator]
+
+Another, more complex and newer version, is CaliLantern calibrator. [^calilantern_calibrator]
 
 Commands to add skew data with determined values:
 
@@ -302,6 +307,8 @@ Travel Acceleration:
 
 [^adxl345_hardware_connection]: [ADXL345 SPI hardware connection](https://www.klipper3d.org/Measuring_Resonances.html#direct-to-raspberry-pi)
 
-[^orca_calibration]: [OrcaSlicer calibration](https://github.com/SoftFever/OrcaSlicer/wiki/Calibration)
+[^orca_calibration]: [Orca Slicer calibration](<https://github.com/SoftFever/Orca Slicer/wiki/Calibration>)
 
-[^califlower_calibrator]: [CaliFlower Calibrator] (https://vector3d.shop/products/califlower-calibration)
+[^califlower_calibrator]: [CaliFlower Calibrator] (<https://vector3d.shop/products/califlower-calibration>)
+
+[^calilantern_calibrator]: [CaliLantern Calibrator] (<https://vector3d.shop/pages/calilantern-calibration-calculator-mk2>)
