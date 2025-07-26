@@ -1,314 +1,316 @@
-# klipper configuration
+# Klipper Configuration
 
-## Hardware in use
+## Table of Contents
 
-* Frame: Ender 3 Pro (v1)
-  * X axis
-    * transmission: belt
-    * rail: linear rail
-  * Y axis
-    * transmission: belt
-    * rail: dual linear rail
-  * Z axis
-    * transmission: dual lead screw
-    * rails: triple V-Wheels on V-Slots
-    * sync belt for z-screws
-* Main Board: BigTreeTech SKR v1.4 Turbo
-* Stepper drivers: BigTreeTech TMC2209
-* Display: Original Universal LCD 12864 Creality CR10
-* Bed: Creality Glass
-* Extruder:
-  * Type: Direct
-  * Hotend: Creality Sprite Pro
-  * Gears: Creality Sprite Pro
+1. [Hardware Overview](#hardware-overview)
+1. [Software Installation](#software-installation)
+1. [Configuration Setup](#configuration-setup)
+1. [File Structure](#file-structure)
+1. [Calibration Procedures](#calibration-procedures)
+1. [Slicer Integration](#slicer-integration)
+1. [Maintenance & Troubleshooting](#maintenance--troubleshooting)
+1. [References](#references)
 
-## Install Klipper
+## Hardware Overview
 
-Klipper can be easily installed by using KIAUH[^kiauh_repo] linux app from within Raspberry PI.
+### 3D Printer Specifications
 
-Through KIAUH, the following apps are to be installed:
+* **Frame**: Ender 3 Pro (v1)
+  * **X axis**: Belt transmission with linear rail
+  * **Y axis**: Belt transmission with dual linear rail
+  * **Z axis**: Dual lead screw transmission with triple V-Wheels on V-Slots, synchronized by belt
+* **Main Board**: BigTreeTech SKR v1.4 Turbo (LPC1769 MCU)
+* **Stepper Drivers**: BigTreeTech TMC2209 (silent, sensorless homing capable)
+* **Display**: Original Universal LCD 12864 Creality CR10
+* **Bed**: Creality Glass bed with heated aluminum plate
+* **Extruder**: Direct drive system
+  * **Hotend**: Creality Sprite Pro (all-metal, up to 300°C)
+  * **Gears**: Creality Sprite Pro (3:1 gear ratio)
+* **Auto-leveling**: BLTouch probe for bed mesh compensation
 
-* Klipper
-* Moonraker
-* Fluidd
-* KlipperScreen
-* Mobileraker
-* Spoolman
-* Crowsnest
+## Software Installation
 
-## Install config
+### KIAUH Installation
 
-### Using SSH
+Klipper can be easily installed using KIAUH[^kiauh_repo] - a comprehensive installation assistant for Raspberry Pi.
 
-Printer configuration is located at `~/printer_data/config`.
-
-### Using web interface
-
-Printer configuration can be modified in Klipper web by accessing the menu `Configuration` (keyboard shortcut `X`).
-
-## Flash or update MCU firmware
-
-Klipper can be flashed on 3D Printer's MCU either by using KIAUH menu or manually.
-
-### Flash through KIAUH
-
-3D Printer's MCU can be flashed by running KIAUH interface than choosing the `Advanced` menu followed by `Build + Flash`.
-
-### Manual Flashing[^klipper_build_flash]
-
-1. `cd ~/klipper/ && make menuconfig`
-
-    * Set the following:
-
-    ```bash
-    Micro-controller Architecture (LPC176x (Smoothieboard))
-    Processor model (lpc1769 (120 MHz))
-    ```
-
-1. `make flash`
-
-## Cameras
-
-### Install
-
-1. install `crowsnest` via `kiauh`
-    * select `Y` to update moonraker configuration
-1. copy `crowsnest.cfg` to klipper printer configuration directory
-1. add camera in fluidd settings
-1. restart klipper host
-
-## Scripts
-
-The following gcodes are valid for `Orca Slicer`, `Prusa Slicer` or `SuperSlicer`.
-
-### Start
-
-```gcode
-START_PRINT FIRST_LAYER_BED_TEMP=[first_layer_bed_temperature] FIRST_LAYER_NOZZLE_TEMP=[first_layer_temperature]
+```bash
+cd ~ && git clone https://github.com/dw-0/kiauh.git
+./kiauh/kiauh.sh
 ```
 
-### End
+### Required Applications
 
-```gcode
-END_PRINT
+#### Core Components
+
+* **Klipper**: Advanced 3D printer firmware that runs on the host computer
+* **Moonraker**: API web server for Klipper (enables web interface communication)
+
+#### Web Interfaces (choose one)
+
+* **Fluidd**: Modern, responsive web interface for Klipper
+* **Mainsail**: Alternative web interface with different UI/UX approach
+
+#### Optional Components
+
+* **KlipperScreen**: Touch screen interface for direct printer control
+* **Mobileraker**: Mobile companion app for remote printer monitoring
+* **Spoolman**: Filament spool management system for tracking usage
+* **Crowsnest**: Camera streaming service for print monitoring
+
+## Configuration Setup
+
+### Installation Methods
+
+#### Using SSH
+
+```bash
+# Navigate to configuration directory
+cd ~/printer_data/config
+
+# Clone or copy configuration files
+git clone <this-repository> .
 ```
 
-## BLTouch offset
+#### Using Web Interface
 
-### X and Y axes calibration
+1. Access Fluidd web interface
+2. Navigate to `Configuration` menu (keyboard shortcut `X`)
+3. Upload configuration files directly through the interface
 
-X and Y axes calibration can be achieved by using the CaliFlower calibrator. [^califlower_calibrator]
+### MCU Firmware Flashing
 
-If required calibration on all 3 axes, CaliLantern calibrator can be used. [^calilantern_calibrator]
+#### Automatic Flashing (KIAUH)
 
-### Z axis calibration
+1. Run KIAUH interface
+2. Choose `Advanced` menu
+3. Select `Build + Flash`
+4. Follow prompts for LPC1769 configuration
 
-1. set a big `z_offset` value under `[bltouch]` section, in `printer.cfg` file
-1. restart the firmware
-1. make sure the nozzle is clean of plastics; also the the bed surface is flat and free of debris
-1. home the machine with `G28`
-1. issue a `PROBE_CALIBRATE` command
-1. if the nozzle does not move to a position above the automatic probe point, then issue `ABORT` and perform the XY probe offset calibration
-1. get the returned Z position and subtract or add a distance dz by issuing `TESTZ Z=-dz`
-1. check with the thickness of a paper the distance between the nozzle and the bed
-1. repeat subtracting or adding by issuing `TESTZ` command until distance is met; by issuing `TESTZ Z=+` will add (or subtract if `Z=-`) half the distance last used
-1. when accuracy is met issue a `ACCEPT` command
-1. save the setting by issuing `SAVE_CONFIG`
-1. restart firmware by issuing `RESTART`
+#### Manual Flashing
 
-### Test probe accuracy
+```bash
+cd ~/klipper/ && make menuconfig
+```
 
-1. home the machine with `G28`
-1. issue a `PROBE_ACCURACY` command and wait for the results
+Set configuration:
 
-## Mesh
+* **Micro-controller Architecture**: LPC176x (Smoothieboard)
+* **Processor model**: lpc1769 (120 MHz)
 
-### Creating a mesh
+```bash
+make flash
+```
 
-1. make sure the the bed surface free of debree
-1. home the machine with `G28`
-1. issue `BED_MESH_CALIBRATE` and wait to finish
-1. give the profile a name `BED_MESH_PROFILE SAVE=<name>`
-1. save the setting by issuing `SAVE_CONFIG`
+#### Alternative: FlashMagic (Windows)
 
-### Save a mesh
+The `flashmagic/` directory contains FlashMagic project files for flashing firmware using the Windows-based FlashMagic utility. This is useful for initial firmware installation or recovery.
 
-1. give the profile a name `BED_MESH_PROFILE SAVE=<name>`
-1. save the setting by issuing `SAVE_CONFIG`
+## File Structure
 
-### Load a mesh
+```md
+klipper_config/
+├── printer.cfg              # Main configuration file (includes all others)
+├── frame.cfg                # Printer kinematics and motion settings
+├── creality_sprite_pro.cfg  # Extruder and hotend configuration
+├── skr_1.4_turbo.cfg        # Motherboard pin definitions and settings
+├── creality_lcd.cfg         # Display configuration
+├── bl_touch.cfg             # BLTouch probe settings
+├── accelerometers.cfg       # Input shaping sensor configuration
+├── macros.cfg               # Custom G-code macros
+├── fluidd.cfg               # Fluidd web interface settings
+├── crowsnest.cfg            # Camera streaming configuration
+├── moonraker.conf           # Moonraker API server configuration
+├── orca_slicer/             # Slicer profiles directory
+│   └── *.json               # OrcaSlicer printer profiles
+├── flashmagic/              # FlashMagic project files
+│   └── *.fmx                # MCU flashing configurations
+└── README.md                # This documentation
+```
 
-1. get a mesh by the profile name `BED_MESH_PROFILE LOAD=<name>`
+### Configuration Files Explained
 
-### Delete a mesh
+* **printer.cfg**: Main entry point that includes all other configuration modules
+* **frame.cfg**: Defines printer geometry, speeds, accelerations, and bed settings
+* **skr_1.4_turbo.cfg**: Pin assignments and hardware-specific settings for the motherboard
+* **creality_sprite_pro.cfg**: Extruder motor settings, thermistor configuration, and retraction
+* **bl_touch.cfg**: Probe offsets, homing behavior, and mesh settings
+* **macros.cfg**: Custom commands for start/end print sequences and utilities
 
-1. get a mesh by the profile name `BED_MESH_PROFILE REMOVE=<name>`
+## Calibration Procedures
 
-## PID
+### Initial Setup Sequence
 
-### PID for Extruder
+#### 1. BLTouch Probe Calibration
 
-Issue a `PID_CALIBRATE HEATER=extruder TARGET=200` command
+##### XY Offset Calibration
 
-### PID for Bed
+Use CaliFlower[^califlower_calibrator] or CaliLantern[^calilantern_calibrator] calibrators for precise probe positioning.
 
-Issue a `PID_CALIBRATE HEATER=heater_bed TARGET=60` command
+##### Z Offset Calibration
 
-## Printing temperature
+```gcode
+G28                    # Home all axes
+PROBE_CALIBRATE        # Start calibration
+TESTZ Z=-0.1          # Adjust nozzle height
+ACCEPT                # Save when paper drag is correct
+SAVE_CONFIG           # Persist settings
+```
 
-Orca Slicer provides built-in calibration model [^orca_calibration] for temperature. See calibration menu.
+#### 2. PID Tuning
 
-## Retraction settings
+```gcode
+# Extruder PID (200°C target)
+PID_CALIBRATE HEATER=extruder TARGET=200
 
-Orca Slicer provides built-in calibration model [^orca_calibration] for retractions. See calibration menu.
+# Bed PID (60°C target)
+PID_CALIBRATE HEATER=heater_bed TARGET=60
+```
 
-Once the proper value was calculated according the described procedure in documentation, update Klipper settings and update the slicer:
+#### 3. E-Steps Calibration
 
-1. update the tuned parameter inside `[firmware_retraction]` section
-1. issue a `RESTART` command to restart the firmware
-1. setup slicer:
-    * set 0 retraction length (Prusa Slicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Length`)
-    * disable wipe (Prusa Slicer/SuperSlicer: `Printer Settings -> Extruder 1 -> Retraction -> Wipe while retracting`)
-    * enable use firmware retractions (Prusa Slicer/SuperSlicer: `Printer Settings -> General -> Advanced -> Use firmware retractions`)
+1. Mark filament 120mm from extruder entry
+2. Heat extruder to printing temperature
+3. Extrude 100mm: `G1 E100 F60`
+4. Measure actual extrusion
+5. Calculate new rotation_distance:
 
-## Skew
+   ```md
+   new_rotation_distance = current_value × (commanded_mm / actual_mm)
+   ```
 
-Skew can be determined and corrected after determining the parameters for it.
+#### 4. Bed Mesh Creation
 
-A calibrator for Skew is the CaliFlower calibrator. [^califlower_calibrator]
+```gcode
+G28                           # Home all axes
+BED_MESH_CALIBRATE           # Generate mesh
+BED_MESH_PROFILE SAVE=default # Save profile
+SAVE_CONFIG                  # Persist to disk
+```
 
-Another, more complex and newer version, is CaliLantern calibrator. [^calilantern_calibrator]
+#### 5. Resonance Compensation
 
-Commands to add skew data with determined values:
+##### Prerequisites
 
-```klipper
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install -y python3-numpy python3-matplotlib libatlas-base-dev
+
+# Configure Raspberry Pi as secondary MCU
+cd ~/klipper/
+sudo cp ./scripts/klipper-mcu.service /etc/systemd/system/
+sudo systemctl enable klipper-mcu.service
+make menuconfig  # Set to "Linux process"
+make flash
+```
+
+##### Frequency Testing
+
+```gcode
+# Test X axis resonance
+TEST_RESONANCES AXIS=X
+
+# Test Y axis resonance  
+TEST_RESONANCES AXIS=Y
+
+# Analyze results
+~/klipper/scripts/calibrate_shaper.py /tmp/resonances_x_*.csv -o /tmp/shaper_x.png
+~/klipper/scripts/calibrate_shaper.py /tmp/resonances_y_*.csv -o /tmp/shaper_y.png
+```
+
+#### 6. Skew Correction
+
+```gcode
+# Set skew values from calibration print
 SET_SKEW XY=99.79,100.31,70.6
 SKEW_PROFILE SAVE=CaliFlower
 SAVE_CONFIG
-SKEW_PROFILE LOAD=CaliFlower
 ```
 
-## Resonance compensation [^resonance_measurement]
+### Advanced Calibration
 
-### Depenedencies
+#### Pressure Advance Tuning
 
-#### Prepare environment
+Use OrcaSlicer's built-in calibration models[^orca_calibration] or print a calibration tower. Typical values for direct drive: 0.02-0.08.
 
-1. Install needed libs
+#### Retraction Tuning
 
-    ```bash
-    sudo apt update
-    sudo apt install -y python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev
-    ```
+Configure firmware retraction for optimal stringing control:
 
-1. Install python libs
+```ini
+[firmware_retraction]
+retract_length: 0.8      # Distance to retract
+retract_speed: 40        # Retraction speed
+unretract_speed: 40      # Prime speed
+```
 
-    ```bash
-    ~/klippy-env/bin/pip install -v numpy
-    /usr/bin/python3 -m pip install pyserial --break-system-packages
-    ```
+## Slicer Integration
 
-1. Enable the SPI on Raspberry PI
+### OrcaSlicer Configuration
 
-    ```bash
-    sudo raspi-config
-    ```
+Pre-configured profiles are available in `orca_slicer/` directory:
 
-    `Interface Option` -> `SPI` -> `Yes`
+* **Creality Ender-3 0.4 nozzle Klipper.json**: Optimized profile for this printer
+* Includes remote printing setup (`print_host: 3dprinter001.iveronsoft.ro`)
+* Firmware retraction enabled (set slicer retraction to 0)
 
-#### Make the RPI a secondary MCU [^rpi_as_secondary_mcu]
+### Start/End G-code
 
-To be able to use the SPI, I2C or any other protocol from Raspberry PI, the RPI board needs to be made a secondary MCU.
+```gcode
+# Start G-code
+START_PRINT FIRST_LAYER_BED_TEMP=[first_layer_bed_temperature] FIRST_LAYER_NOZZLE_TEMP=[first_layer_temperature]
 
-Steps below describe how to make Raspberry PI a secondary MCU.
+# End G-code
+END_PRINT
+```
 
-1. Enable the klipper-mcu service
+### Remote Printing Setup
 
-    ```bash
-    cd ~/klipper/
-    sudo cp ./scripts/klipper-mcu.service /etc/systemd/system/
-    sudo systemctl enable klipper-mcu.service
-    ```
+1. Ensure `print_host` in slicer profile matches your printer's IP
+2. Configure Moonraker to accept API requests
+3. Set API key if authentication is enabled
 
-1. Change configuration to build for the Raspberry PI
+## Maintenance & Troubleshooting
 
-    ```bash
-    cd ~/klipper/
-    make menuconfig
-    ```
+### Regular Maintenance
 
-    Set "Microcontroller Architecture" to "Linux process," then save and exit.
+* **Bed Mesh**: Re-calibrate monthly or after bed changes
+* **PID Values**: Re-tune after hardware changes
+* **Belt Tension**: Check and adjust periodically
+* **Linear Rails**: Clean and lubricate as needed
 
-1. Build and install the firmware on the Raspberry PI
+### Common Issues
 
-    ```bash
-    sudo service klipper stop
-    make flash
-    sudo service klipper start
-    ```
+* **Layer shifting**: Check belt tension, verify TMC2209 current settings
+* **First layer problems**: Re-calibrate Z-offset, check bed mesh
+* **Temperature fluctuations**: Re-run PID tuning
+* **Stringing**: Adjust retraction settings, verify hotend temperature
 
-1. (Optional) If issues with permission add current user `pi` to `tty` group
+### Firmware Updates
 
-    ```bash
-    sudo usermod -a -G tty pi
-    ```
+1. Update Klipper: Use KIAUH's update function
+2. Update MCU firmware: Flash new firmware when Klipper updates require it
+3. Backup configurations before major updates
 
-### Test communication
+## Camera Setup
 
-In klipper console type:
+### Crowsnest Installation
 
-`ACCELEROMETER_QUERY CHIP=adxl345`
+1. Install via KIAUH (select `Y` to update Moonraker configuration)
+2. Copy `crowsnest.cfg` to printer configuration directory
+3. Add camera in Fluidd/Mainsail settings
+4. Restart Klipper host service
 
-### Finding the frequency
+## Performance Notes
 
-1. connect the accelerator board to the Raspberry PI [^adxl345_hardware_connection]
-1. Find resonance for axis X `TEST_RESONANCES AXIS=X` this will generate a `.csv` file in `/tmp/`
-1. Find resonance for axis Y `TEST_RESONANCES AXIS=Y` this will generate a `.csv` file in `/tmp/`
-1. Analyze `.csv` files for each of the axis by using the `calibrate_shaper.py` tool
+* **Max Travel Acceleration**: 7000 mm/s² (may cause Y-axis skipping above this value)
+* **Max Print Acceleration**: 4500 mm/s² (limited by Y-axis resonance)
+* **Recommended Print Speeds**: 60-80 mm/s for quality, up to 120 mm/s for speed
 
-    ```bash
-    ~/klipper/scripts/calibrate_shaper.py /tmp/resonances_x_*.csv -o /tmp/shaper_calibrate_x.png
-    ~/klipper/scripts/calibrate_shaper.py /tmp/resonances_y_*.csv -o /tmp/shaper_calibrate_y.png
-    ```
+## References
 
-1. The output of last step:
-    1. the console output contains the final result with recommended shaper and the resonance frequency
-    1. are two `.png` files which contain details about the analysis results
-
-## Slicer settings
-
-Travel Acceleration:
-
-* 7000 does not skip on X but skips on Y axis
-
-## More Info
-
-[^kiauh_repo]: [KIAUH repository](https://github.com/dw-0/kiauh)
-
-[2]: [Klipper documentation overview](https://github.com/KevinOConnor/klipper/blob/master/docs/Overview.md)
-
-[^klipper_build_flash]: [Build and Flash the micro controller](https://www.klipper3d.org/Installation.html#building-and-flashing-the-micro-controller)
-
-[4]: [Pressure advance](https://www.klipper3d.org/Pressure_Advance.html)
-
-[5]: [Slicers macros](https://github.com/KevinOConnor/klipper/blob/e7b0e7b43bbf20bf89f47444fbbfc0e10aca1ed1/docs/Slicers.md)
-
-[6]: [Start print macro sample](https://github.com/KevinOConnor/klipper/blob/d36dbfebd17500f0af176abd88d8b258c7940e47/config/printer-lulzbot-taz6-dual-v3-2017.cfg#L216)
-
-[7]: [Retraction Test Object](https://www.thingiverse.com/thing:4532977)
-
-[8]: [Firmware Retraction](https://www.klipper3d.org/Config_Reference.html#firmware_retraction)
-
-[^resonance_measurement]: [Measuring resonances](https://www.klipper3d.org/Measuring_Resonances.html)
-
-[10]: [Resonance compensation](https://www.klipper3d.org/Resonance_Compensation.html)
-
-[^rpi_as_secondary_mcu]: [RPi microcontroller as a secondary MCU](https://www.klipper3d.org/RPi_microcontroller.html)
-
-[^adxl345_hardware_connection]: [ADXL345 SPI hardware connection](https://www.klipper3d.org/Measuring_Resonances.html#direct-to-raspberry-pi)
-
-[^orca_calibration]: [Orca Slicer calibration](<https://github.com/SoftFever/Orca Slicer/wiki/Calibration>)
-
-[^califlower_calibrator]: [CaliFlower Calibrator] (<https://vector3d.shop/products/califlower-calibration>)
-
-[^calilantern_calibrator]: [CaliLantern Calibrator] (<https://vector3d.shop/pages/calilantern-calibration-calculator-mk2>)
+[^kiauh_repo]: [KIAUH Repository](https://github.com/dw-0/kiauh)
+[^orca_calibration]: [OrcaSlicer Calibration](https://github.com/SoftFever/OrcaSlicer/wiki/Calibration)
+[^califlower_calibrator]: [CaliFlower Calibrator](https://vector3d.shop/products/califlower-calibration)
+[^calilantern_calibrator]:
