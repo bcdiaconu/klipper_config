@@ -26,7 +26,7 @@
 * **Extruder**: Direct drive system
   * **Hotend**: Creality Sprite Pro (all-metal, up to 300°C)
   * **Gears**: Creality Sprite Pro (3:1 gear ratio)
-* **Auto-leveling**: BLTouch probe for bed mesh compensation
+* **Auto-leveling**: 3DTouch v3.0 (BLTouch clone) probe for bed mesh compensation
 
 ## Software Installation
 
